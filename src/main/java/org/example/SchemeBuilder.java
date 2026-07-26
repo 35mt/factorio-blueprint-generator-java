@@ -27,7 +27,9 @@ public class SchemeBuilder {
         stack.add(mainNode);
         while (!stack.isEmpty()) {
             PrimaryRecipeNode node = stack.pop();
-            System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; " + node.getNeedPerSecond());
+            System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
+                    + node.getNeedPerSecond() + "; "
+                    + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
 
             stack.addAll(node.getChildren());
         }

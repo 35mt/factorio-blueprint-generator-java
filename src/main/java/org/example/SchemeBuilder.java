@@ -17,8 +17,20 @@ public class SchemeBuilder {
         if (recipeList.isEmpty()) {
             throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
         }
-        recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
+        PrimaryRecipeNode node = recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
+        printTree(node);
 
+    }
+
+    public void printTree(PrimaryRecipeNode mainNode) {
+        Stack<PrimaryRecipeNode> stack = new Stack<>();
+        stack.add(mainNode);
+        while (!stack.isEmpty()) {
+            PrimaryRecipeNode node = stack.pop();
+            System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; " + node.getNeedPerSecond());
+
+            stack.addAll(node.getChildren());
+        }
     }
 
     private String multString(String string, int count){
@@ -38,7 +50,6 @@ public class SchemeBuilder {
 
         while (!primaryRecipeNodes.isEmpty()) {
             PrimaryRecipeNode node = primaryRecipeNodes.pop(); // Низкоуровневый узел
-            System.out.println(multString(" ", node.getLevel() * 5) + "*" + node.getName());
 
             // Перебор ингредиентов узла для создания новых узлов или завершении ветки
             for (Item ingredient : node.getRecipe().getIngredients()) {

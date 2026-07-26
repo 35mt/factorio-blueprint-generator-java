@@ -1,16 +1,4 @@
 {
-    "recipe-unknown": 
-    {
-      "type": "recipe",
-      "name": "recipe-unknown",
-      "icon": "__core__/graphics/icons/unknown.png",
-      "icon_size": 64,
-      "hidden": true,
-      "ingredients": 
-      {},
-      "results": 
-      {}
-    },
     "parameter-0": 
     {
       "type": "recipe",

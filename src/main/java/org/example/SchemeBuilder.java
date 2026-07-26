@@ -16,8 +16,14 @@ public class SchemeBuilder {
 
     public void build(String resourceName, double countPerSecond) {
         List<Recipe> recipeList = getSuitableRecipes(resourceName);
-        System.out.println( recipeList.get(0).getName());
-        //System.out.println( recipeList.get(1).getName());
+        if (recipeList.isEmpty()) {
+            throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
+        }
+
+
+    }
+
+    private void recipeTreeBuild(Recipe recipe) {
 
     }
 

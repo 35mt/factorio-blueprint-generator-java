@@ -3,13 +3,11 @@ package org.example;
 import org.example.read.Item;
 import org.example.read.Recipe;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SchemeBuilder {
-    private Map<String, Recipe> recipes;
+    private final Map<String, Recipe> recipes;
+
     public SchemeBuilder(Map<String, Recipe> recipes) {
         this.recipes = recipes;
     }
@@ -19,12 +17,56 @@ public class SchemeBuilder {
         if (recipeList.isEmpty()) {
             throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
         }
-
+        recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
 
     }
 
-    private void recipeTreeBuild(Recipe recipe) {
+    private String multString(String string, int count){
+        StringBuilder stringBuilder =new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            stringBuilder.append(string);
+        }
+        return stringBuilder.toString();
+    }
 
+    private PrimaryRecipeNode recipeTreeBuild(Recipe primaryRecipe, String rName,  double countPerSecond) {
+        // Главный и первый узел дерева - от него расходятся ветки дерева
+        PrimaryRecipeNode mainTreeNode = new PrimaryRecipeNode(false, rName, countPerSecond, primaryRecipe, null, 0);
+
+        Stack<PrimaryRecipeNode> primaryRecipeNodes = new Stack<>();
+        primaryRecipeNodes.add(mainTreeNode);
+
+        while (!primaryRecipeNodes.isEmpty()) {
+            PrimaryRecipeNode node = primaryRecipeNodes.pop(); // Низкоуровневый узел
+            System.out.println(multString(" ", node.getLevel() * 5) + "*" + node.getName());
+
+            // Перебор ингредиентов узла для создания новых узлов или завершении ветки
+            for (Item ingredient : node.getRecipe().getIngredients()) {
+                // Создание высокоуровневого узла (1 ингредиент для низкоуровневого)
+                double needsPerSecond = (node.getNeedPerSecond() * ingredient.getAmount()) / node.getResultResourceCount();
+
+                // Получение доступных рецептов для этого узла
+                List<Recipe> sRecipes = getSuitableRecipes(ingredient.getName());
+                boolean isBranchEnd = sRecipes.isEmpty(); // Если в рецептах нет ни одного подходящего - это конец ветки, так как больше некуда разворачивать
+
+                PrimaryRecipeNode hLNode = new PrimaryRecipeNode(
+                        isBranchEnd,
+                        ingredient.getName(),
+                        needsPerSecond,
+                        isBranchEnd ? null : sRecipes.get(0), // Пока что выбирается первый доступный рецепт
+                        node,
+                        node.getLevel() + 1);
+
+                if (!isBranchEnd &&
+                        !((hLNode.getRecipe().getCategory() != null && hLNode.getRecipe().getCategory().equals("oil-processing"))
+                                || (hLNode.getRecipe().getSubgroup() != null && hLNode.getRecipe().getSubgroup().equals("empty-barrel")))) {
+                    primaryRecipeNodes.add(hLNode);
+                }
+
+                node.getChildren().add(hLNode);
+            }
+        }
+        return mainTreeNode;
     }
 
     private List<Recipe> getSuitableRecipes(String resourceName) {

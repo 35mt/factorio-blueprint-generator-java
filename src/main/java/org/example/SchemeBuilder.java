@@ -1,9 +1,14 @@
 package org.example;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.example.buildings.Size;
 import org.example.buildings.WorkStation;
+import org.example.encode.Encoder;
+import org.example.encode.Entity;
 import org.example.read.Item;
 import org.example.read.Recipe;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class SchemeBuilder {
@@ -15,17 +20,43 @@ public class SchemeBuilder {
         this.workStations = workStations;
     }
 
-    public void build(String resourceName, double countPerSecond) {
+    public void build(String resourceName, double countPerSecond) throws UnsupportedEncodingException, JsonProcessingException {
         List<Recipe> recipeList = getSuitableRecipes(resourceName);
         if (recipeList.isEmpty()) {
             throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
         }
         PrimaryRecipeNode node = recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
-        printTree(node, true);
-        System.out.println(multString("-", 100));
-        printTree(node, false);
-        System.out.println(multString("-", 100));
-        printLine(node);
+//        printTree(node, true);
+//        System.out.println(multString("-", 100));
+//        printTree(node, false);
+//        System.out.println(multString("-", 100));
+//        printLine(node);
+        System.out.println(Encoder.encode(primarySchemeBuild(node), "bl"));
+
+    }
+
+    public List<Entity> primarySchemeBuild(PrimaryRecipeNode mainNode) {
+        List<Entity> entities = new ArrayList<>();
+        int currentXLevel = 0;
+
+        Stack<PrimaryRecipeNode> stack = new Stack<>();
+        stack.add(mainNode);
+        while (!stack.isEmpty()) {
+            PrimaryRecipeNode node = stack.pop();
+            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
+            if (workStation == null || node.getRecipe() == null) {
+                continue;
+            }
+
+            for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
+                entities.add(new Entity(workStation.getName(), new Size(currentXLevel, node.getLevel() * -6), node.getRecipe().getName()));
+                currentXLevel -= 3;
+            }
+
+            stack.addAll(node.getChildren());
+            currentXLevel -= 3;
+        }
+        return entities;
     }
 
     public void printLine(PrimaryRecipeNode mainNode) {

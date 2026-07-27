@@ -58,7 +58,7 @@ public class Recipe implements Serializable {
     }
 
     public double getEnergy_required() {
-        return energy_required;
+        return energy_required == 0.0 ? 0.5 : energy_required;
     }
 
     public void setEnergy_required(double energy_required) {

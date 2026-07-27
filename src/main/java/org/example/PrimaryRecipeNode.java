@@ -24,6 +24,13 @@ public class PrimaryRecipeNode {
         this.level = level;
     }
 
+    public int getMachinesCount(double coef) {
+        if (this.recipe == null) {
+            return 0;
+        }
+        return (int) Math.ceil((recipe.getEnergy_required() / getResultResourceCount() / coef) * needPerSecond);
+    }
+
     public int getLevel() {
         return level;
     }

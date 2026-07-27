@@ -13,6 +13,6 @@ public class Main {
     public static void main(String[] args) throws IOException {
         RecipesReader recipesReader = new RecipesReader(new File("recipes.json"));
         SchemeBuilder schemeBuilder = new SchemeBuilder(recipesReader.getRecipes());
-        schemeBuilder.build("utility-science-pack", 5);
+        schemeBuilder.build("logistic-science-pack", 2);
         }
     }

@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.buildings.WorkStation;
 import org.example.read.Item;
 import org.example.read.Recipe;
 
@@ -7,9 +8,11 @@ import java.util.*;
 
 public class SchemeBuilder {
     private final Map<String, Recipe> recipes;
+    private final Map<String, WorkStation> workStations;
 
-    public SchemeBuilder(Map<String, Recipe> recipes) {
+    public SchemeBuilder(Map<String, Recipe> recipes, Map<String, WorkStation> workStations) {
         this.recipes = recipes;
+        this.workStations = workStations;
     }
 
     public void build(String resourceName, double countPerSecond) {
@@ -18,17 +21,49 @@ public class SchemeBuilder {
             throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
         }
         PrimaryRecipeNode node = recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
-        printTree(node);
-
+        printTree(node, true);
+        System.out.println(multString("-", 100));
+        printTree(node, false);
+        System.out.println(multString("-", 100));
+        printLine(node);
     }
 
-    public void printTree(PrimaryRecipeNode mainNode) {
+    public void printLine(PrimaryRecipeNode mainNode) {
         Stack<PrimaryRecipeNode> stack = new Stack<>();
         stack.add(mainNode);
         while (!stack.isEmpty()) {
             PrimaryRecipeNode node = stack.pop();
+            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
+            if (workStation == null) {
+                continue;
+            }
+            System.out.println(multString(" ", 2 * node.getLevel()) + "\\");
+            System.out.println(multString(" ", 2 * node.getLevel() + 1) + node.getName());
+            System.out.print("\u001B[34m");
+            for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
+                System.out.println(multString(" ", 2 * node.getLevel() + 1) + "*");
+            }
+            System.out.print("\u001B[0m");
+            stack.addAll(node.getChildren());
+        }
+    }
+
+    public void printTree(PrimaryRecipeNode mainNode, boolean isSoftPrint) {
+        Stack<PrimaryRecipeNode> stack = new Stack<>();
+        stack.add(mainNode);
+        while (!stack.isEmpty()) {
+            PrimaryRecipeNode node = stack.pop();
+            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
+            if (workStation == null && isSoftPrint) {
+                continue;
+            }
+            if (workStation == null) {
+                System.out.print("\u001B[31m");
+            } else {
+                System.out.print("\u001B[0m");
+            }
             System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
-                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(0.75) + "; "
+                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.getCoef()) + "; "
                     + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
 
             stack.addAll(node.getChildren());

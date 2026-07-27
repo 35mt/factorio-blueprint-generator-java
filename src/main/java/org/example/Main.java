@@ -22,10 +22,10 @@ public class Main {
         Map<String, WorkStation> workStationMap = new HashMap<>();
         workStationMap.put(null, new WorkStation(0.75, new Size(3, 3), "assembling-machine-2"));
         workStationMap.put("crafting", new WorkStation(0.75, new Size(3, 3), "assembling-machine-2"));
-        //workStationMap.put("smelting", new WorkStation(2, new Size(3, 3), "electric-furnace"));
+        workStationMap.put("smelting", new WorkStation(2, new Size(3, 3), "electric-furnace"));
 
         SchemeBuilder schemeBuilder = new SchemeBuilder(recipesReader.getRecipes(), workStationMap);
-        schemeBuilder.build("electric-furnace", 0.2);
+        schemeBuilder.build("substation", 0.2);
     }
 
 }

@@ -11,12 +11,19 @@ public class Entity {
     private final Size position;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String recipe;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final String direction;
 
-    public Entity(String name, Size position, String recipe) {
+    public Entity(String name, Size position, String recipe, String direction) {
+        this.direction = direction;
         this.entity_number = String.valueOf(currentNumber++);
         this.recipe = recipe;
         this.name = name;
         this.position = position;
+    }
+
+    public String getDirection() {
+        return direction;
     }
 
     public String getRecipe() {

@@ -49,7 +49,20 @@ public class SchemeBuilder {
             }
 
             for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
-                entities.add(new Entity(workStation.getName(), new Size(currentXLevel, node.getLevel() * -6), node.getRecipe().getName()));
+                // Конвееры
+                entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, node.getLevel() * -6 + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, node.getLevel() * -6 + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, node.getLevel() * -6 + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, node.getLevel() * -6 - 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, node.getLevel() * -6 - 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, node.getLevel() * -6 - 3), null, "4"));
+
+                // Манипуляторы
+                entities.add(new Entity("fast-inserter", new Size(currentXLevel, node.getLevel() * -6 + 2), null, null));
+                entities.add(new Entity("fast-inserter", new Size(currentXLevel, node.getLevel() * -6 - 2), null, null));
+
+                // Рабочая станция
+                entities.add(new Entity(workStation.getName(), new Size(currentXLevel, node.getLevel() * -6), node.getRecipe().getName(), null));
                 currentXLevel -= 3;
             }
 

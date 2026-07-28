@@ -7,17 +7,21 @@ import org.example.read.Recipe;
 import java.util.*;
 
 public class TreeBuilder {
-     private final Map<String, Recipe> recipes;
-     private final Map<String, WorkStation> workStations;
-     private final List<String> rawComponents;
+    private final Map<String, Recipe> recipes;
+    private final Map<String, WorkStation> workStations;
+    private final List<String> rawComponents;
 
-     public TreeBuilder(Map<String, Recipe> recipes, Map<String, WorkStation> workStations, List<String> rawComponents) {
-         this.recipes = recipes;
-         this.workStations = workStations;
-         this.rawComponents = rawComponents;
-     }
+    public TreeBuilder(Map<String, Recipe> recipes, Map<String, WorkStation> workStations, List<String> rawComponents) {
+        this.recipes = recipes;
+        this.workStations = workStations;
+        this.rawComponents = rawComponents;
+    }
 
     public PrimaryRecipeNode recipeTreeBuild(Recipe primaryRecipe, String rName, double countPerSecond) {
+       if (primaryRecipe.getCategory() != null && workStations.get(primaryRecipe.getCategory()) == null) {
+           throw new NullPointerException("Нельзя составлять чертёж, когда конечный продукт требует рабочей станции неизвестной категории. Категория рецепта: " + primaryRecipe.getCategory());
+       }
+
         // Главный и первый узел дерева - от него расходятся ветки дерева
         PrimaryRecipeNode mainTreeNode = new PrimaryRecipeNode(false, rName, countPerSecond, primaryRecipe, null, 0);
 
@@ -68,47 +72,47 @@ public class TreeBuilder {
         return mainTreeNode;
     }
 
-     public void printTree(PrimaryRecipeNode mainNode, boolean isSoftPrint) {
-         Stack<PrimaryRecipeNode> stack = new Stack<>();
-         stack.add(mainNode);
-         while (!stack.isEmpty()) {
-             PrimaryRecipeNode node = stack.pop();
-             WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
-             if (workStation == null && isSoftPrint) {
-                 continue;
-             }
-             if (workStation == null) {
-                 System.out.print("\u001B[31m");
-             } else {
-                 System.out.print("\u001B[0m");
-             }
-             System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
-                     + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.getCoef()) + "; "
-                     + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
+    public void printTree(PrimaryRecipeNode mainNode, boolean isSoftPrint) {
+        Stack<PrimaryRecipeNode> stack = new Stack<>();
+        stack.add(mainNode);
+        while (!stack.isEmpty()) {
+            PrimaryRecipeNode node = stack.pop();
+            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
+            if (workStation == null && isSoftPrint) {
+                continue;
+            }
+            if (workStation == null) {
+                System.out.print("\u001B[31m");
+            } else {
+                System.out.print("\u001B[0m");
+            }
+            System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
+                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.getCoef()) + "; "
+                    + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
 
-             stack.addAll(node.getChildren());
-         }
-     }
+            stack.addAll(node.getChildren());
+        }
+    }
 
-     private String multString(String string, int count) {
-         StringBuilder stringBuilder = new StringBuilder();
-         for (int i = 0; i < count; i++) {
-             stringBuilder.append(string);
-         }
-         return stringBuilder.toString();
-     }
+    private String multString(String string, int count) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            stringBuilder.append(string);
+        }
+        return stringBuilder.toString();
+    }
 
-     public List<Recipe> getSuitableRecipes(String resourceName) {
-         List<Recipe> suitableRecipes = new ArrayList<>();
-         for (Iterator<Recipe> it = recipes.values().iterator(); it.hasNext(); ) {
-             Recipe recipe = it.next();
-             if (recipe.getResults() == null) continue;
-             for (Item result : recipe.getResults()) {
-                 if (result != null && result.getName().equals(resourceName)) {
-                     suitableRecipes.add(recipe);
-                 }
-             }
-         }
-         return suitableRecipes;
-     }
- }
+    public List<Recipe> getSuitableRecipes(String resourceName) {
+        List<Recipe> suitableRecipes = new ArrayList<>();
+        for (Iterator<Recipe> it = recipes.values().iterator(); it.hasNext(); ) {
+            Recipe recipe = it.next();
+            if (recipe.getResults() == null) continue;
+            for (Item result : recipe.getResults()) {
+                if (result != null && result.getName().equals(resourceName)) {
+                    suitableRecipes.add(recipe);
+                }
+            }
+        }
+        return suitableRecipes;
+    }
+}

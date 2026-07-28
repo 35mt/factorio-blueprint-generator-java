@@ -39,6 +39,8 @@ public class SchemeBuilder {
 
     public List<Entity> primarySchemeBuild(PrimaryRecipeNode mainNode) {
         List<Entity> entities = new ArrayList<>();
+        // Список точек обрыва конвейера - для слепого соединения конвейеров неизвестной длины на одном уровне
+        List<Size> breakPoints = new ArrayList<>();
         int currentXLevel = 0;
 
         Stack<PrimaryRecipeNode> stack = new Stack<>();
@@ -47,9 +49,12 @@ public class SchemeBuilder {
             PrimaryRecipeNode node = stack.pop();
             WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
 
+            int startXLevel = currentXLevel;
+
             int yShift = getYShift(node);
             boolean isTwoLine = getTransportBeltCount(node.getRecipe().getIngredients().size()) >= 2;
             for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
+                currentXLevel -= 3;
                 // Конвейеры
                 addTopTransportBelts(entities, currentXLevel, yShift, isTwoLine, i);
                 entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, yShift + 3), null, "4"));
@@ -64,8 +69,14 @@ public class SchemeBuilder {
 
                 // Рабочая станция
                 entities.add(new Entity(workStation.getName(), new Size(currentXLevel, yShift), node.getRecipe().getName(), null));
-                currentXLevel -= 3;
             }
+            // Добавляем точки разрыва конвейеров к верхним принимающим линиям
+            if (isTwoLine) breakPoints.add(new Size(currentXLevel - 1, yShift - 4));
+            breakPoints.add(new Size(currentXLevel - 1, yShift - 3));
+
+            // sffsef
+            addIngredientReceiver(entities, breakPoints, node, startXLevel,  currentXLevel, yShift);
+
             // Добавляем дочерние узлы в обратном порядке, для правильного смещения по индексу при 2 линиях конвейеров
             List<PrimaryRecipeNode> reversedChildren = new ArrayList<>(node.getChildren());
             Collections.reverse(reversedChildren);
@@ -76,7 +87,33 @@ public class SchemeBuilder {
         return entities;
     }
 
-    private void addIngredientReceiver(List<Entity> entities, int startXLevel, int currentXLevel, int yShift, int ingredientsCount) {
+    private void addIngredientReceiver(List<Entity> entities, List<Size> breakPoints, PrimaryRecipeNode node, int startXLevel, int currentXLevel, int yShift) {
+        if (node.getParent() == null) {
+            return;
+        }
+        // Номер ингредиента в рецепте родителя
+        List<PrimaryRecipeNode> parentIngredintsList = node.getParent().getChildren();
+        int nodeIndex = parentIngredintsList.indexOf(node);
+        if ((parentIngredintsList.size() >= 2 && nodeIndex == 0) || (parentIngredintsList.size() >= 4 && nodeIndex == 2)) {
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 2, yShift + 2), null, "8"));
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 2, yShift + 3), null, "4"));
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 3, yShift + 3), null, "4"));
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 3, yShift + 2), null, "4"));
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 4, yShift + 2), null, "4"));
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 4, yShift + 3), null, "0"));
+            breakPoints.add(new Size(currentXLevel - 4, yShift + 3));
+        }
+
+        // Соединение линий конвейеров на неизвестном расстоянии по breakPoints
+        int i = 0;
+        while (i < 100) {
+            Size currentSize = new Size(startXLevel - 1, yShift + 3).xShift(i);
+            if (breakPoints.contains(currentSize)) {
+                break;
+            }
+            entities.add(new Entity("transport-belt", currentSize, null, "4"));
+            i++;
+        }
 
     }
 

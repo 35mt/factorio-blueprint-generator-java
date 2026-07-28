@@ -8,4 +8,20 @@ public class Size {
         this.x = x;
         this.y = y;
     }
+
+    public Size xShift(int shift) {
+        return new Size(this.x + shift, this.y);
+    }
+
+    public Size yShift(int shift) {
+        return new Size(this.x, this.y + shift);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Size size) {
+            return this.x == size.x && this.y == size.y;
+        }
+        return false;
+    }
 }

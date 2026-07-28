@@ -74,26 +74,6 @@ public class SchemeBuilder {
         return entities;
     }
 
-    public void printLine(PrimaryRecipeNode mainNode) {
-        Stack<PrimaryRecipeNode> stack = new Stack<>();
-        stack.add(mainNode);
-        while (!stack.isEmpty()) {
-            PrimaryRecipeNode node = stack.pop();
-            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
-            if (workStation == null) {
-                continue;
-            }
-            System.out.println(multString(" ", 2 * node.getLevel()) + "\\");
-            System.out.println(multString(" ", 2 * node.getLevel() + 1) + node.getName());
-            System.out.print("\u001B[34m");
-            for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
-                System.out.println(multString(" ", 2 * node.getLevel() + 1) + "*");
-            }
-            System.out.print("\u001B[0m");
-            stack.addAll(node.getChildren());
-        }
-    }
-
     public void printTree(PrimaryRecipeNode mainNode, boolean isSoftPrint) {
         Stack<PrimaryRecipeNode> stack = new Stack<>();
         stack.add(mainNode);

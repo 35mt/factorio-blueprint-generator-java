@@ -66,8 +66,11 @@ public class SchemeBuilder {
                 entities.add(new Entity(workStation.getName(), new Size(currentXLevel, yShift), node.getRecipe().getName(), null));
                 currentXLevel -= 3;
             }
+            // Добавляем дочерние узлы в обратном порядке, для правильного смещения по индексу при 2 линиях конвейеров
+            List<PrimaryRecipeNode> reversedChildren = new ArrayList<>(node.getChildren());
+            Collections.reverse(reversedChildren);
+            stack.addAll(reversedChildren);
 
-            stack.addAll(node.getChildren());
             currentXLevel -= 3;
         }
         return entities;
@@ -109,23 +112,22 @@ public class SchemeBuilder {
         }
 
         // Индивидуальный сдвиг в зависимости от индекса в списке ингредиентов у родительского ресурса
-        Item nodeItem = new Item();
-        nodeItem.setName(topNode.getName());
-        int yShift = 0;//-(topNode.getParent().getChildren().indexOf(topNode) / 2);
+        int yShift = 0;
 
         // Рекурсивный проход по всем уровням для общего сдвига
         PrimaryRecipeNode node = topNode;
 
-        do {
+        while (node.getParent() != null) {
+            yShift -= getTransportBeltCount(node.getParent().getRecipe().getIngredients().size()) + 5;
+            yShift += node.getParent().getChildren().indexOf(node) / 2;
+
             node = node.getParent();
-            yShift += getTransportBeltCount(node.getRecipe().getIngredients().size()) + 5;
-        } while (node.getParent() != null);
-
-
-        return -yShift;
+        }
+        return yShift;
     }
 
     private int getTransportBeltCount(int ingredientCount) {
         return (int) Math.ceil((double) ingredientCount / 2);
     }
+
 }

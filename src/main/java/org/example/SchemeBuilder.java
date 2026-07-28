@@ -15,20 +15,22 @@ public class SchemeBuilder {
     private final Map<String, Recipe> recipes;
     private final Map<String, WorkStation> workStations;
     private final List<String> rawComponents;
+    private final TreeBuilder treeBuilder;
 
     public SchemeBuilder(Map<String, Recipe> recipes, Map<String, WorkStation> workStations, List<String> rawComponents) {
         this.recipes = recipes;
         this.workStations = workStations;
         this.rawComponents = rawComponents;
+        this.treeBuilder = new TreeBuilder(recipes, workStations, rawComponents);
     }
 
     public void build(String resourceName, double countPerSecond) throws UnsupportedEncodingException, JsonProcessingException {
-        List<Recipe> recipeList = getSuitableRecipes(resourceName);
+        List<Recipe> recipeList = treeBuilder.getSuitableRecipes(resourceName);
         if (recipeList.isEmpty()) {
             throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
         }
-        PrimaryRecipeNode node = recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
-        printTree(node, true);
+        PrimaryRecipeNode node = treeBuilder.recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
+        treeBuilder.printTree(node, true);
 //        System.out.println(multString("-", 100));
 //        printTree(node, false);
         System.out.println(Encoder.encode(primarySchemeBuild(node), "bl"));
@@ -45,21 +47,23 @@ public class SchemeBuilder {
             PrimaryRecipeNode node = stack.pop();
             WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
 
+            int yShift = getYShift(node);
+            boolean isTwoLine = getTransportBeltCount(node.getRecipe().getIngredients().size()) >= 2;
             for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
-                // Конвееры
-                entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, node.getLevel() * -6 + 3), null, "4"));
-                entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, node.getLevel() * -6 + 3), null, "4"));
-                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, node.getLevel() * -6 + 3), null, "4"));
-                entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, node.getLevel() * -6 - 3), null, "4"));
-                entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, node.getLevel() * -6 - 3), null, "4"));
-                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, node.getLevel() * -6 - 3), null, "4"));
+                // Конвейеры
+                addTopTransportBelts(entities, currentXLevel, yShift, isTwoLine, i);
+                entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, yShift + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift + 3), null, "4"));
 
                 // Манипуляторы
-                entities.add(new Entity("fast-inserter", new Size(currentXLevel, node.getLevel() * -6 + 2), null, null));
-                entities.add(new Entity("fast-inserter", new Size(currentXLevel, node.getLevel() * -6 - 2), null, null));
+                if (isTwoLine)
+                    entities.add(new Entity("long-handed-inserter", new Size(currentXLevel + 1, yShift - 2), null, null));
+                entities.add(new Entity("fast-inserter", new Size(currentXLevel, yShift + 2), null, null));
+                entities.add(new Entity("fast-inserter", new Size(currentXLevel, yShift - 2), null, null));
 
                 // Рабочая станция
-                entities.add(new Entity(workStation.getName(), new Size(currentXLevel, node.getLevel() * -6), node.getRecipe().getName(), null));
+                entities.add(new Entity(workStation.getName(), new Size(currentXLevel, yShift), node.getRecipe().getName(), null));
                 currentXLevel -= 3;
             }
 
@@ -69,94 +73,59 @@ public class SchemeBuilder {
         return entities;
     }
 
-    public void printTree(PrimaryRecipeNode mainNode, boolean isSoftPrint) {
-        Stack<PrimaryRecipeNode> stack = new Stack<>();
-        stack.add(mainNode);
-        while (!stack.isEmpty()) {
-            PrimaryRecipeNode node = stack.pop();
-            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
-            if (workStation == null && isSoftPrint) {
-                continue;
-            }
-            if (workStation == null) {
-                System.out.print("\u001B[31m");
-            } else {
-                System.out.print("\u001B[0m");
-            }
-            System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
-                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.getCoef()) + "; "
-                    + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
+    private void addIngredientReceiver(List<Entity> entities, int startXLevel, int currentXLevel, int yShift, int ingredientsCount) {
 
-            stack.addAll(node.getChildren());
-        }
     }
 
-    private String multString(String string, int count) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < count; i++) {
-            stringBuilder.append(string);
+    private void addTopTransportBelts(List<Entity> entities, int currentXLevel, int yShift, boolean isTwoLine, int i) {
+        if (i == 0) {
+            if (isTwoLine) {
+                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift - 4), null, "8"));
+            }
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift - 3), null, "8"));
+        } else {
+            if (isTwoLine) {
+                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift - 4), null, "4"));
+            }
+
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift - 3), null, "4"));
+            entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift - 3), null, "4"));
         }
-        return stringBuilder.toString();
+        // Конвейеры
+        if (isTwoLine) {
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, yShift - 4), null, "4"));
+            entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift - 4), null, "4"));
+        }
+        entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, yShift - 3), null, "4"));
     }
 
-    private PrimaryRecipeNode recipeTreeBuild(Recipe primaryRecipe, String rName, double countPerSecond) {
-        // Главный и первый узел дерева - от него расходятся ветки дерева
-        PrimaryRecipeNode mainTreeNode = new PrimaryRecipeNode(false, rName, countPerSecond, primaryRecipe, null, 0);
-
-        Stack<PrimaryRecipeNode> primaryRecipeNodes = new Stack<>();
-        primaryRecipeNodes.add(mainTreeNode);
-
-        while (!primaryRecipeNodes.isEmpty()) {
-            PrimaryRecipeNode node = primaryRecipeNodes.pop(); // Низкоуровневый узел
-
-            // Перебор ингредиентов узла для создания новых узлов или завершении ветки
-            for (Item ingredient : node.getRecipe().getIngredients()) {
-                // Создание высокоуровневого узла (1 ингредиент для низкоуровневого)
-                double needsPerSecond = (node.getNeedPerSecond() * ingredient.getAmount()) / node.getResultResourceCount();
-
-                // Получение доступных рецептов для этого узла
-                List<Recipe> sRecipes = getSuitableRecipes(ingredient.getName());
-
-                // Условия выхода из ветки
-                boolean isEmptyRecipes = sRecipes.isEmpty(); // Если в рецептах нет ни одного подходящего - это конец ветки, так как больше некуда разворачивать
-                if (isEmptyRecipes) {
-                    continue;
-                }
-
-                PrimaryRecipeNode hLNode = new PrimaryRecipeNode(
-                        false,
-                        ingredient.getName(),
-                        needsPerSecond,
-                        sRecipes.get(0), // Пока что выбирается первый доступный рецепт
-                        node,
-                        node.getLevel() + 1);
-
-                // Условия пропуска ингредиента
-                boolean isRawComponent = rawComponents.contains(hLNode.getName());
-                boolean isNoWorkStation = WorkStation.getWorkStationInMap(workStations, hLNode) == null;
-                boolean isBarrelCycle = "empty-barrel".equals(hLNode.getRecipe().getSubgroup()); // Костыль - при выгрузке жидкостей из бочек происходит зацикливание
-                if (isBarrelCycle || isRawComponent || isNoWorkStation) {
-                    continue;
-                }
-                primaryRecipeNodes.add(hLNode);
-                node.getChildren().add(hLNode);
-
-            }
+    private int getYShift(PrimaryRecipeNode topNode) {
+        if (getTransportBeltCount(topNode.getRecipe().getIngredients().size()) > 2) {
+            throw new RuntimeException("В рецепте " + topNode.getName() + " Необходимо задействовать больше 2 полос конвейеров, пока что скрипт так не умеет - добавьте этот компонент в сырьевые");
         }
-        return mainTreeNode;
+        // Если передан главный узел - сразу возврат
+        if (topNode.getLevel() == 0) {
+            return 0;
+        }
+
+        // Индивидуальный сдвиг в зависимости от индекса в списке ингредиентов у родительского ресурса
+        Item nodeItem = new Item();
+        nodeItem.setName(topNode.getName());
+        int yShift = 0;//-(topNode.getParent().getChildren().indexOf(topNode) / 2);
+
+        // Рекурсивный проход по всем уровням для общего сдвига
+        PrimaryRecipeNode node = topNode;
+
+        do {
+            node = node.getParent();
+            yShift += getTransportBeltCount(node.getRecipe().getIngredients().size()) + 5;
+        } while (node.getParent() != null);
+
+
+        return -yShift;
     }
 
-    private List<Recipe> getSuitableRecipes(String resourceName) {
-        List<Recipe> suitableRecipes = new ArrayList<>();
-        for (Iterator<Recipe> it = recipes.values().iterator(); it.hasNext(); ) {
-            Recipe recipe = it.next();
-            if (recipe.getResults() == null) continue;
-            for (Item result : recipe.getResults()) {
-                if (result != null && result.getName().equals(resourceName)) {
-                    suitableRecipes.add(recipe);
-                }
-            }
-        }
-        return suitableRecipes;
+    private int getTransportBeltCount(int ingredientCount) {
+        return (int) Math.ceil((double) ingredientCount / 2);
     }
 }

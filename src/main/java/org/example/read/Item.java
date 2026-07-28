@@ -3,6 +3,7 @@ package org.example.read;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Item implements Serializable {
@@ -35,5 +36,13 @@ public class Item implements Serializable {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Item item) {
+            return this.name.equals(item.getName());
+        }
+        return false;
     }
 }

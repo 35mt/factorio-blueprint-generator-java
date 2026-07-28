@@ -30,10 +30,13 @@ public class Main {
         // Сырьевые компоненты
         List<String> rawComponents = new ArrayList<>();
         //rawComponents.add("copper-cable");
-        rawComponents.add("electronic-circuit");
+        //rawComponents.add("electronic-circuit");
+        //rawComponents.add("satellite");
 
         SchemeBuilder schemeBuilder = new SchemeBuilder(recipesReader.getRecipes(), workStationMap, rawComponents);
-        schemeBuilder.build("substation", 0.2);
+        //schemeBuilder.build("substation", 0.2);
+        //schemeBuilder.build("satellite", 0.01);
+        schemeBuilder.build("chemical-plant", 0.1);
     }
 
 }

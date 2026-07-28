@@ -106,7 +106,7 @@ public class SchemeBuilder {
 
         // Соединение линий конвейеров на неизвестном расстоянии по breakPoints
         int i = 0;
-        while (i < 100) {
+        while (true) {
             Size currentSize = new Size(startXLevel - 1, yShift + 3).xShift(i);
             if (breakPoints.contains(currentSize)) {
                 break;

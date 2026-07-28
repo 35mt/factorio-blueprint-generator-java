@@ -14,10 +14,12 @@ import java.util.*;
 public class SchemeBuilder {
     private final Map<String, Recipe> recipes;
     private final Map<String, WorkStation> workStations;
+    private final List<String> rawComponents;
 
-    public SchemeBuilder(Map<String, Recipe> recipes, Map<String, WorkStation> workStations) {
+    public SchemeBuilder(Map<String, Recipe> recipes, Map<String, WorkStation> workStations, List<String> rawComponents) {
         this.recipes = recipes;
         this.workStations = workStations;
+        this.rawComponents = rawComponents;
     }
 
     public void build(String resourceName, double countPerSecond) throws UnsupportedEncodingException, JsonProcessingException {

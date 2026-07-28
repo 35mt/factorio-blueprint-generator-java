@@ -28,11 +28,9 @@ public class SchemeBuilder {
             throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
         }
         PrimaryRecipeNode node = recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
-//        printTree(node, true);
+        printTree(node, true);
 //        System.out.println(multString("-", 100));
 //        printTree(node, false);
-//        System.out.println(multString("-", 100));
-//        printLine(node);
         System.out.println(Encoder.encode(primarySchemeBuild(node), "bl"));
 
     }
@@ -46,9 +44,6 @@ public class SchemeBuilder {
         while (!stack.isEmpty()) {
             PrimaryRecipeNode node = stack.pop();
             WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
-            if (workStation == null || node.getRecipe() == null) {
-                continue;
-            }
 
             for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
                 // Конвееры
@@ -96,15 +91,15 @@ public class SchemeBuilder {
         }
     }
 
-    private String multString(String string, int count){
-        StringBuilder stringBuilder =new StringBuilder();
+    private String multString(String string, int count) {
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < count; i++) {
             stringBuilder.append(string);
         }
         return stringBuilder.toString();
     }
 
-    private PrimaryRecipeNode recipeTreeBuild(Recipe primaryRecipe, String rName,  double countPerSecond) {
+    private PrimaryRecipeNode recipeTreeBuild(Recipe primaryRecipe, String rName, double countPerSecond) {
         // Главный и первый узел дерева - от него расходятся ветки дерева
         PrimaryRecipeNode mainTreeNode = new PrimaryRecipeNode(false, rName, countPerSecond, primaryRecipe, null, 0);
 
@@ -121,23 +116,31 @@ public class SchemeBuilder {
 
                 // Получение доступных рецептов для этого узла
                 List<Recipe> sRecipes = getSuitableRecipes(ingredient.getName());
-                boolean isBranchEnd = sRecipes.isEmpty(); // Если в рецептах нет ни одного подходящего - это конец ветки, так как больше некуда разворачивать
+
+                // Условия выхода из ветки
+                boolean isEmptyRecipes = sRecipes.isEmpty(); // Если в рецептах нет ни одного подходящего - это конец ветки, так как больше некуда разворачивать
+                if (isEmptyRecipes) {
+                    continue;
+                }
 
                 PrimaryRecipeNode hLNode = new PrimaryRecipeNode(
-                        isBranchEnd,
+                        false,
                         ingredient.getName(),
                         needsPerSecond,
-                        isBranchEnd ? null : sRecipes.get(0), // Пока что выбирается первый доступный рецепт
+                        sRecipes.get(0), // Пока что выбирается первый доступный рецепт
                         node,
                         node.getLevel() + 1);
 
-                if (!isBranchEnd &&
-                        !((hLNode.getRecipe().getCategory() != null && hLNode.getRecipe().getCategory().equals("oil-processing"))
-                                || (hLNode.getRecipe().getSubgroup() != null && hLNode.getRecipe().getSubgroup().equals("empty-barrel")))) {
-                    primaryRecipeNodes.add(hLNode);
+                // Условия пропуска ингредиента
+                boolean isRawComponent = rawComponents.contains(hLNode.getName());
+                boolean isNoWorkStation = WorkStation.getWorkStationInMap(workStations, hLNode) == null;
+                boolean isBarrelCycle = "empty-barrel".equals(hLNode.getRecipe().getSubgroup()); // Костыль - при выгрузке жидкостей из бочек происходит зацикливание
+                if (isBarrelCycle || isRawComponent || isNoWorkStation) {
+                    continue;
                 }
-
+                primaryRecipeNodes.add(hLNode);
                 node.getChildren().add(hLNode);
+
             }
         }
         return mainTreeNode;

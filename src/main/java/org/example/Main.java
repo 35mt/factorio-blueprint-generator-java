@@ -17,14 +17,22 @@ import java.util.Map;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
+    // Пример использования
     public static void main(String[] args) throws IOException {
         RecipesReader recipesReader = new RecipesReader(new File("recipes.json"));
+
+        // Рабочие станции
         Map<String, WorkStation> workStationMap = new HashMap<>();
         workStationMap.put(null, new WorkStation(0.75, new Size(3, 3), "assembling-machine-2"));
         workStationMap.put("crafting", new WorkStation(0.75, new Size(3, 3), "assembling-machine-2"));
         workStationMap.put("smelting", new WorkStation(2, new Size(3, 3), "electric-furnace"));
 
-        SchemeBuilder schemeBuilder = new SchemeBuilder(recipesReader.getRecipes(), workStationMap);
+        // Сырьевые компоненты
+        List<String> rawComponents = new ArrayList<>();
+        //rawComponents.add("copper-cable");
+        rawComponents.add("electronic-circuit");
+
+        SchemeBuilder schemeBuilder = new SchemeBuilder(recipesReader.getRecipes(), workStationMap, rawComponents);
         schemeBuilder.build("substation", 0.2);
     }
 

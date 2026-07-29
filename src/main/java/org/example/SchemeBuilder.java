@@ -5,7 +5,6 @@ import org.example.buildings.Size;
 import org.example.buildings.WorkStation;
 import org.example.encode.Encoder;
 import org.example.encode.Entity;
-import org.example.read.Item;
 import org.example.read.Recipe;
 
 import java.io.UnsupportedEncodingException;
@@ -24,16 +23,14 @@ public class SchemeBuilder {
         this.treeBuilder = new TreeBuilder(recipes, workStations, rawComponents);
     }
 
-    public void build(String resourceName, double countPerSecond) throws UnsupportedEncodingException, JsonProcessingException {
+    public String build(String resourceName, double countPerSecond) throws UnsupportedEncodingException, JsonProcessingException {
         List<Recipe> recipeList = treeBuilder.getSuitableRecipes(resourceName);
         if (recipeList.isEmpty()) {
             throw new NullPointerException("Не найдено ни 1 рецепта с таким результатом");
         }
         PrimaryRecipeNode node = treeBuilder.recipeTreeBuild(recipeList.get(0), resourceName, countPerSecond);
-        treeBuilder.printTree(node, true);
-//        System.out.println(multString("-", 100));
-//        printTree(node, false);
-        System.out.println(Encoder.encode(primarySchemeBuild(node), "bl"));
+
+        return Encoder.encode(primarySchemeBuild(node), "bl");
 
     }
 

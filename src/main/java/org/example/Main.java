@@ -16,7 +16,7 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        RecipesReader recipesReader = new RecipesReader(new File("recipes.json"));
+        RecipesReader recipesReader = new RecipesReader(new File("data-raw-dump.json"));
         baseShell(recipesReader.getRecipes());
 
         // Пример использования
@@ -40,7 +40,6 @@ public class Main {
 //        //System.out.println(schemeBuilder.build("artillery-shell", 0.1));
 //        //System.out.println(schemeBuilder.build("utility-science-pack", 1));
 //        //System.out.println(schemeBuilder.build("engine-unit", 1));
-        System.in.read();
     }
 
     static void baseShell(Map<String, Recipe> recipes) {
@@ -57,49 +56,44 @@ public class Main {
             System.out.println("3: Собрать схему");
             System.out.println("Выберете действие: ");
             input = scanner.nextLine();
-
-//            try {
-                if (input.equals("1")) {
-                    System.out.println("Введите категорию (строчный код) рецепта для рабочей станции: ");
-                    String category = scanner.nextLine();
-                    System.out.println("Введите название (строчный код) рабочей станции: ");
-                    String name = scanner.nextLine();
-                    System.out.println("Введите коэффициент скорости изготовления: ");
-                    double coef;
-                    try {
-                        coef = Float.parseFloat(scanner.nextLine().replace(",", "."));
-                    } catch (Exception e) {
-                        System.out.println("Ошибка при парсинге коэффициента: " + e.getMessage());
-                        continue;
-                    }
-
-                    workStationMap.put(!category.equals("null") ? category : null, new WorkStation(coef, new Size(3, 3), name));
-                } else if (input.equals("2")) {
-                    System.out.println("Введите название (строчный код) сырьевого ресурса: ");
-                    rawComponents.add(scanner.nextLine());
-                } else if (input.equals("3")) {
-                    System.out.println("Введите название итогового ресурса (строчный код) для составления схемы: ");
-                    String name = scanner.nextLine();
-                    double count;
-                    System.out.println("Введите необходимое количество ресурса в секунду: ");
-                    try {
-                        count = Float.parseFloat(scanner.nextLine().replace(",", "."));
-                    } catch (Exception e) {
-                        System.out.println("Ошибка при парсинге количества: " + e.getMessage());
-                        continue;
-                    }
-                    SchemeBuilder schemeBuilder = new SchemeBuilder(recipes, workStationMap, rawComponents);
-                    try {
-                        System.out.println(schemeBuilder.build(name, count));
-                    } catch (JsonProcessingException e) {
-                        System.out.println("JsonProcessingException: " + e.getMessage());
-                    } catch (UnsupportedEncodingException e) {
-                        System.out.println("UnsupportedEncodingException: " + e.getMessage());
-                    }
+            if (input.equals("1")) {
+                System.out.println("Введите категорию (строчный код) рецепта для рабочей станции: ");
+                String category = scanner.nextLine();
+                System.out.println("Введите название (строчный код) рабочей станции: ");
+                String name = scanner.nextLine();
+                System.out.println("Введите коэффициент скорости изготовления: ");
+                double coef;
+                try {
+                    coef = Float.parseFloat(scanner.nextLine().replace(",", "."));
+                } catch (Exception e) {
+                    System.out.println("Ошибка при парсинге коэффициента: " + e.getMessage());
+                    continue;
                 }
-//            } catch (Exception e) {
-//                System.out.println("Неизвестная ошибка: " + e.getMessage());
-//            }
+
+                workStationMap.put(!category.equals("null") ? category : null, new WorkStation(coef, new Size(3, 3), name));
+            } else if (input.equals("2")) {
+                System.out.println("Введите название (строчный код) сырьевого ресурса: ");
+                rawComponents.add(scanner.nextLine());
+            } else if (input.equals("3")) {
+                System.out.println("Введите название итогового ресурса (строчный код) для составления схемы: ");
+                String name = scanner.nextLine();
+                double count;
+                System.out.println("Введите необходимое количество ресурса в секунду: ");
+                try {
+                    count = Float.parseFloat(scanner.nextLine().replace(",", "."));
+                } catch (Exception e) {
+                    System.out.println("Ошибка при парсинге количества: " + e.getMessage());
+                    continue;
+                }
+                SchemeBuilder schemeBuilder = new SchemeBuilder(recipes, workStationMap, rawComponents);
+                try {
+                    System.out.println(schemeBuilder.build(name, count));
+                } catch (JsonProcessingException e) {
+                    System.out.println("JsonProcessingException: " + e.getMessage());
+                } catch (UnsupportedEncodingException e) {
+                    System.out.println("UnsupportedEncodingException: " + e.getMessage());
+                }
+            }
         }
     }
 }

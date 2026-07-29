@@ -1,6 +1,7 @@
 package org.example.read;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,7 +12,9 @@ public class Recipe implements Serializable {
     private String category;
     private String subgroup;
     private double energy_required;
+    @JsonDeserialize(using = IngredientsDeserializer.class)
     private List<Item> ingredients;
+    @JsonDeserialize(using = IngredientsDeserializer.class)
     private List<Item> results;
 
     public Recipe() {

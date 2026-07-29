@@ -9,15 +9,15 @@ import java.io.IOException;
 import java.util.Map;
 
 public class RecipesReader {
-    private Map<String, Recipe> recipes;
+    private Map<String, Map<String, Recipe>> recipes;
     public RecipesReader(File jsonFile) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-        recipes = objectMapper.readValue(jsonFile, new TypeReference<Map<String, Recipe>>() {});
+        recipes = objectMapper.readValue(jsonFile, new TypeReference<Map<String, Map<String, Recipe>>>() {});
     }
 
     public Map<String, Recipe> getRecipes() {
-        return recipes;
+        return recipes.get("recipe");
     }
 }

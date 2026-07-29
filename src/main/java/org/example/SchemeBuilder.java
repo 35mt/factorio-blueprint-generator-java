@@ -71,8 +71,8 @@ public class SchemeBuilder {
             if (isTwoLine) breakPoints.add(new Size(currentXLevel - 1, yShift - 4));
             breakPoints.add(new Size(currentXLevel - 1, yShift - 3));
 
-            // sffsef
-            addIngredientReceiver(entities, breakPoints, node, startXLevel,  currentXLevel, yShift);
+            // Соединение конвейеров между собой
+            transportBeltsConnecting(entities, breakPoints, node, startXLevel,  currentXLevel, yShift);
 
             // Добавляем дочерние узлы в обратном порядке, для правильного смещения по индексу при 2 линиях конвейеров
             List<PrimaryRecipeNode> reversedChildren = new ArrayList<>(node.getChildren());
@@ -84,7 +84,7 @@ public class SchemeBuilder {
         return entities;
     }
 
-    private void addIngredientReceiver(List<Entity> entities, List<Size> breakPoints, PrimaryRecipeNode node, int startXLevel, int currentXLevel, int yShift) {
+    private void transportBeltsConnecting(List<Entity> entities, List<Size> breakPoints, PrimaryRecipeNode node, int startXLevel, int currentXLevel, int yShift) {
         if (node.getParent() == null) {
             return;
         }
@@ -111,7 +111,6 @@ public class SchemeBuilder {
             entities.add(new Entity("transport-belt", currentSize, null, "4"));
             i++;
         }
-
     }
 
     private void addTopTransportBelts(List<Entity> entities, int currentXLevel, int yShift, boolean isTwoLine, int i) {

@@ -72,28 +72,6 @@ public class TreeBuilder {
         return mainTreeNode;
     }
 
-    public void printTree(PrimaryRecipeNode mainNode, boolean isSoftPrint) {
-        Stack<PrimaryRecipeNode> stack = new Stack<>();
-        stack.add(mainNode);
-        while (!stack.isEmpty()) {
-            PrimaryRecipeNode node = stack.pop();
-            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
-            if (workStation == null && isSoftPrint) {
-                continue;
-            }
-            if (workStation == null) {
-                System.out.print("\u001B[31m");
-            } else {
-                System.out.print("\u001B[0m");
-            }
-            System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
-                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.getCoef()) + "; "
-                    + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
-
-            stack.addAll(node.getChildren());
-        }
-    }
-
     private String multString(String string, int count) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < count; i++) {
@@ -114,5 +92,28 @@ public class TreeBuilder {
             }
         }
         return suitableRecipes;
+    }
+
+    // Отображение дерева в консоли для отладки
+    public void printTree(PrimaryRecipeNode mainNode, boolean isSoftPrint) {
+        Stack<PrimaryRecipeNode> stack = new Stack<>();
+        stack.add(mainNode);
+        while (!stack.isEmpty()) {
+            PrimaryRecipeNode node = stack.pop();
+            WorkStation workStation = WorkStation.getWorkStationInMap(workStations, node);
+            if (workStation == null && isSoftPrint) {
+                continue;
+            }
+            if (workStation == null) {
+                System.out.print("\u001B[31m");
+            } else {
+                System.out.print("\u001B[0m");
+            }
+            System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
+                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.getCoef()) + "; "
+                    + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
+
+            stack.addAll(node.getChildren());
+        }
     }
 }

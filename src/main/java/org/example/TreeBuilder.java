@@ -18,7 +18,7 @@ public class TreeBuilder {
     }
 
     public PrimaryRecipeNode recipeTreeBuild(Recipe primaryRecipe, String rName, double countPerSecond) {
-       if (primaryRecipe.getCategory() != null && workStations.get(primaryRecipe.getCategory()) == null) {
+       if (workStations.get(primaryRecipe.getCategory()) == null) {
            throw new NullPointerException("Нельзя составлять чертёж, когда конечный продукт требует рабочей станции неизвестной категории. Категория рецепта: " + primaryRecipe.getCategory());
        }
 

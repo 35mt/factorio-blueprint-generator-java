@@ -34,6 +34,7 @@ public class WorkStation {
         } catch (NullPointerException e) {
             return null;
         }
+        System.out.println(workStation);
         return workStation;
     }
 }

@@ -12,7 +12,7 @@
 
 <img width="1506" height="764" alt="image" src="https://github.com/user-attachments/assets/0e41894b-2e63-45af-98d0-443497bc2aff" />
 
-### Перейдите туда и откройте список Assets, а затем скачайте factorio_auto_blueprints.zip
+### Перейдите туда и откройте список Assets последней версии, а затем скачайте factorio_auto_blueprints.zip
 <img width="1548" height="752" alt="image" src="https://github.com/user-attachments/assets/7819da78-f8ec-4e0e-84fa-020f5db52645" />
 
 ### Распакуйте скачанный zip архив

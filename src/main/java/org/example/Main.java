@@ -67,6 +67,8 @@ public class Main {
             System.out.println("3: Собрать схему");
             System.out.println("4: Отобразить список рабочих станций");
             System.out.println("5: Отобразить список сырьевых компонентов");
+            System.out.println("6: Удалить рабочую станцию по категории");
+            System.out.println("7: Удалить сырьевой ресурс по индексу");
             System.out.println("Выберете действие: ");
 
             input = scanner.nextLine();
@@ -88,6 +90,7 @@ public class Main {
             } else if (input.equals("2")) {
                 System.out.println("Введите название (строчный код) сырьевого ресурса: ");
                 rawComponents.add(scanner.nextLine());
+                DataSaver.saveData(rawComponents, workStationMap);
             } else if (input.equals("3")) {
                 System.out.println("Введите название итогового ресурса (строчный код) для составления схемы: ");
                 String name = scanner.nextLine();
@@ -110,9 +113,43 @@ public class Main {
             } else if (input.equals("4")) {
                 System.out.println("---------------------------");
                 for (Map.Entry<String, WorkStation> pair : workStationMap.entrySet()) {
-                    System.out.println("category: " + pair.getKey() + "; name: " + pair.getValue().name() + "; coef:  " + pair.getValue().coef() + "; size: " + pair.getValue().size());
+                    System.out.println("category: " + pair.getKey() + "; " + pair.getValue());
                 }
                 System.out.println("---------------------------");
+            } else if (input.equals("5")) {
+                System.out.println("---------------------------");
+                for (int i = 0; i < rawComponents.size(); i++) {
+                    System.out.println(i + ": " + rawComponents.get(i));
+                }
+                System.out.println("---------------------------");
+            } else if (input.equals("6")) {
+                System.out.println("Введите категорию для удаления: ");
+                String category = scanner.nextLine();
+                if (!workStationMap.containsKey(category)) {
+                    System.out.println("Категория: " + category + " не найдена в списке рабочих станций");
+                    continue;
+                }
+                workStationMap.remove(category);
+                System.out.println("Рабочая станция по категорией: " + category + " успешно удалена");
+
+                DataSaver.saveData(rawComponents, workStationMap);
+            } else if (input.equals("7")) {
+                System.out.println("Введите индекс сырьевого ингредиента для удаления: ");
+                int index;
+                try {
+                    index = Integer.getInteger(scanner.nextLine());
+                } catch (Exception e) {
+                    System.out.println("Не удалось спрасить данный индекс - убедитесь что вы ввели целое неотрицательное число");
+                    continue;
+                }
+                try {
+                    rawComponents.remove(index);
+                } catch (Exception e) {
+                    System.out.println("Не удалось удалить данный индекс - убедитесь что он существует в таблице");
+                    continue;
+                }
+                System.out.println("Сырьевой ингредиент под индексом: " + index + " успешно удалён");
+                DataSaver.saveData(rawComponents, workStationMap);
             }
         }
     }

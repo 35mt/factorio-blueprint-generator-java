@@ -50,12 +50,24 @@ public class Main {
         List<String> rawComponents;
         try {
             workStationMap = DataSaver.readWorkStations();
+            System.out.println("Список рабочих станций успешно загружен");
         } catch (FileNotFoundException e) {
+            workStationMap = new HashMap<>();
+            System.out.println("Список рабочих станций не найден - создан новый");
+        } catch (Exception e) {
+            System.out.println("Неизвестная ошибка при загрузке списка рабочих станций: " + e.getMessage());
+            System.out.println("Попробуйте удалить файл work_stations.json");
             workStationMap = new HashMap<>();
         }
         try {
             rawComponents = DataSaver.readRawIngredients();
+            System.out.println("Список сырьевых ингредиентов успешно загружен");
         } catch (FileNotFoundException e) {
+            rawComponents = new ArrayList<>();
+            System.out.println("Список сырьевых ингредиентов не найден - создан новый");
+        } catch (Exception e) {
+            System.out.println("Неизвестная ошибка при загрузке списка сырьевых ингрединтов: " + e.getMessage());
+            System.out.println("Попробуйте удалить файл raw_ingredients.json");
             rawComponents = new ArrayList<>();
         }
 
@@ -137,7 +149,7 @@ public class Main {
                 System.out.println("Введите индекс сырьевого ингредиента для удаления: ");
                 int index;
                 try {
-                    index = Integer.getInteger(scanner.nextLine());
+                    index = Integer.parseInt(scanner.nextLine());
                 } catch (Exception e) {
                     System.out.println("Не удалось спрасить данный индекс - убедитесь что вы ввели целое неотрицательное число");
                     continue;

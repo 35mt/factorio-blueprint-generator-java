@@ -4,29 +4,7 @@ import org.example.PrimaryRecipeNode;
 
 import java.util.Map;
 
-public class WorkStation {
-    private final double coef;
-    private final Size size;
-    private final String name;
-
-    public WorkStation(double coef, Size size, String name) {
-        this.coef = coef;
-        this.size = size;
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public double getCoef() {
-        return coef;
-    }
-
-    public Size getSize() {
-        return size;
-    }
-
+public record WorkStation (double coef, Size size, String name) {
     public static WorkStation getWorkStationInMap(Map<String, WorkStation> workStations, PrimaryRecipeNode node) {
         WorkStation workStation;
         try {

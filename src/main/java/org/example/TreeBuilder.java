@@ -110,7 +110,7 @@ public class TreeBuilder {
                 System.out.print("\u001B[0m");
             }
             System.out.println(multString(" ", 5 * node.getLevel()) + "*" + node.getName() + "; "
-                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.getCoef()) + "; "
+                    + node.getNeedPerSecond() + "; " + node.getMachinesCount(workStation == null ? 0 : workStation.coef()) + "; "
                     + (node.isBranchEnd() ? "" : (node.getRecipe().getCategory() + "; " + node.getRecipe().getSubgroup())));
 
             stack.addAll(node.getChildren());

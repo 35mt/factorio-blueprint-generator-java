@@ -45,6 +45,7 @@ public class Recipe implements Serializable {
     }
 
     public String getCategory() {
+        if (category == null) return "null";
         return category;
     }
 

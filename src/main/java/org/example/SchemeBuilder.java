@@ -47,7 +47,7 @@ public class SchemeBuilder {
 
             int yShift = getYShift(node);
             boolean isTwoLine = getTransportBeltCount(node.getRecipe().getIngredients().size()) >= 2;
-            for (int i = 0; i < node.getMachinesCount(workStation.getCoef()); i++) {
+            for (int i = 0; i < node.getMachinesCount(workStation.coef()); i++) {
                 currentXLevel -= 3;
                 // Конвейеры
                 addTopTransportBelts(entities, currentXLevel, yShift, isTwoLine, i);
@@ -62,7 +62,7 @@ public class SchemeBuilder {
                 entities.add(new Entity("fast-inserter", new Point2D(currentXLevel, yShift - 2), null, null));
 
                 // Рабочая станция
-                entities.add(new Entity(workStation.getName(), new Point2D(currentXLevel, yShift), node.getRecipe().getName(), null));
+                entities.add(new Entity(workStation.name(), new Point2D(currentXLevel, yShift), node.getRecipe().getName(), null));
             }
             // Добавляем точки разрыва конвейеров к верхним принимающим линиям
             if (isTwoLine) breakPoints.add(new Point2D(currentXLevel - 1, yShift - 4));

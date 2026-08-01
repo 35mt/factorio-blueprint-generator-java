@@ -7,6 +7,7 @@ import org.example.read.Recipe;
 import org.example.read.RecipesReader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -42,11 +43,21 @@ public class Main {
 //        //System.out.println(schemeBuilder.build("engine-unit", 1));
     }
 
-    static void baseShell(Map<String, Recipe> recipes) {
+    static void baseShell(Map<String, Recipe> recipes) throws IOException {
         Scanner scanner = new Scanner(System.in);
 
-        Map<String, WorkStation> workStationMap = new HashMap<>();
-        List<String> rawComponents = new ArrayList<>();
+        Map<String, WorkStation> workStationMap;
+        List<String> rawComponents;
+        try {
+            workStationMap = DataSaver.readWorkStations();
+        } catch (FileNotFoundException e) {
+            workStationMap = new HashMap<>();
+        }
+        try {
+            rawComponents = DataSaver.readRawIngredients();
+        } catch (FileNotFoundException e) {
+            rawComponents = new ArrayList<>();
+        }
 
         String input = "";
         while (!input.equals("0")) {
@@ -54,7 +65,10 @@ public class Main {
             System.out.println("1: Добавить рабочую станцию");
             System.out.println("2: Добавить сырьевой ресурс");
             System.out.println("3: Собрать схему");
+            System.out.println("4: Отобразить список рабочих станций");
+            System.out.println("5: Отобразить список сырьевых компонентов");
             System.out.println("Выберете действие: ");
+
             input = scanner.nextLine();
             if (input.equals("1")) {
                 System.out.println("Введите категорию (строчный код) рецепта для рабочей станции: ");
@@ -69,8 +83,8 @@ public class Main {
                     System.out.println("Ошибка при парсинге коэффициента: " + e.getMessage());
                     continue;
                 }
-
-                workStationMap.put(!category.equals("null") ? category : null, new WorkStation(coef, new Size(3, 3), name));
+                workStationMap.put(category, new WorkStation(coef, new Size(3, 3), name));
+                DataSaver.saveData(rawComponents, workStationMap);
             } else if (input.equals("2")) {
                 System.out.println("Введите название (строчный код) сырьевого ресурса: ");
                 rawComponents.add(scanner.nextLine());
@@ -93,6 +107,12 @@ public class Main {
                 } catch (UnsupportedEncodingException e) {
                     System.out.println("UnsupportedEncodingException: " + e.getMessage());
                 }
+            } else if (input.equals("4")) {
+                System.out.println("---------------------------");
+                for (Map.Entry<String, WorkStation> pair : workStationMap.entrySet()) {
+                    System.out.println("category: " + pair.getKey() + "; name: " + pair.getValue().name() + "; coef:  " + pair.getValue().coef() + "; size: " + pair.getValue().size());
+                }
+                System.out.println("---------------------------");
             }
         }
     }

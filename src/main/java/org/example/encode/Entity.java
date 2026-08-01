@@ -1,20 +1,20 @@
 package org.example.encode;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.example.buildings.Point2D;
 import org.example.buildings.Size;
 
 public class Entity {
     private static int currentNumber = 1;
     private final String entity_number;
     private final String name;
-    // Size не как размер, а как координаты
-    private final Size position;
+    private final Point2D position;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String recipe;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String direction;
 
-    public Entity(String name, Size position, String recipe, String direction) {
+    public Entity(String name, Point2D position, String recipe, String direction) {
         this.direction = direction;
         this.entity_number = String.valueOf(currentNumber++);
         this.recipe = recipe;
@@ -38,7 +38,7 @@ public class Entity {
         return name;
     }
 
-    public Size getPosition() {
+    public Point2D getPosition() {
         return position;
     }
 }

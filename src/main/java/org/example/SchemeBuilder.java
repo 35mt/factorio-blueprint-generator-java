@@ -1,6 +1,7 @@
 package org.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.example.buildings.Point2D;
 import org.example.buildings.Size;
 import org.example.buildings.WorkStation;
 import org.example.encode.Encoder;
@@ -11,15 +12,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class SchemeBuilder {
-    private final Map<String, Recipe> recipes;
     private final Map<String, WorkStation> workStations;
-    private final List<String> rawComponents;
     private final TreeBuilder treeBuilder;
 
     public SchemeBuilder(Map<String, Recipe> recipes, Map<String, WorkStation> workStations, List<String> rawComponents) {
-        this.recipes = recipes;
         this.workStations = workStations;
-        this.rawComponents = rawComponents;
         this.treeBuilder = new TreeBuilder(recipes, workStations, rawComponents);
     }
 
@@ -37,7 +34,7 @@ public class SchemeBuilder {
     public List<Entity> primarySchemeBuild(PrimaryRecipeNode mainNode) {
         List<Entity> entities = new ArrayList<>();
         // Список точек обрыва конвейера - для слепого соединения конвейеров неизвестной длины на одном уровне
-        List<Size> breakPoints = new ArrayList<>();
+        List<Point2D> breakPoints = new ArrayList<>();
         int currentXLevel = 0;
 
         Stack<PrimaryRecipeNode> stack = new Stack<>();
@@ -54,22 +51,22 @@ public class SchemeBuilder {
                 currentXLevel -= 3;
                 // Конвейеры
                 addTopTransportBelts(entities, currentXLevel, yShift, isTwoLine, i);
-                entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, yShift + 3), null, "4"));
-                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift + 3), null, "4"));
-                entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 1, yShift + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Point2D(currentXLevel + 1, yShift + 3), null, "4"));
+                entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 0, yShift + 3), null, "4"));
 
                 // Манипуляторы
                 if (isTwoLine)
-                    entities.add(new Entity("long-handed-inserter", new Size(currentXLevel + 1, yShift - 2), null, null));
-                entities.add(new Entity("fast-inserter", new Size(currentXLevel, yShift + 2), null, null));
-                entities.add(new Entity("fast-inserter", new Size(currentXLevel, yShift - 2), null, null));
+                    entities.add(new Entity("long-handed-inserter", new Point2D(currentXLevel + 1, yShift - 2), null, null));
+                entities.add(new Entity("fast-inserter", new Point2D(currentXLevel, yShift + 2), null, null));
+                entities.add(new Entity("fast-inserter", new Point2D(currentXLevel, yShift - 2), null, null));
 
                 // Рабочая станция
-                entities.add(new Entity(workStation.getName(), new Size(currentXLevel, yShift), node.getRecipe().getName(), null));
+                entities.add(new Entity(workStation.getName(), new Point2D(currentXLevel, yShift), node.getRecipe().getName(), null));
             }
             // Добавляем точки разрыва конвейеров к верхним принимающим линиям
-            if (isTwoLine) breakPoints.add(new Size(currentXLevel - 1, yShift - 4));
-            breakPoints.add(new Size(currentXLevel - 1, yShift - 3));
+            if (isTwoLine) breakPoints.add(new Point2D(currentXLevel - 1, yShift - 4));
+            breakPoints.add(new Point2D(currentXLevel - 1, yShift - 3));
 
             // Соединение конвейеров между собой
             transportBeltsConnecting(entities, breakPoints, node, startXLevel,  currentXLevel, yShift);
@@ -84,7 +81,7 @@ public class SchemeBuilder {
         return entities;
     }
 
-    private void transportBeltsConnecting(List<Entity> entities, List<Size> breakPoints, PrimaryRecipeNode node, int startXLevel, int currentXLevel, int yShift) {
+    private void transportBeltsConnecting(List<Entity> entities, List<Point2D> breakPoints, PrimaryRecipeNode node, int startXLevel, int currentXLevel, int yShift) {
         if (node.getParent() == null) {
             return;
         }
@@ -92,23 +89,23 @@ public class SchemeBuilder {
         List<PrimaryRecipeNode> parentIngredintsList = node.getParent().getChildren();
         int nodeIndex = parentIngredintsList.indexOf(node);
         if ((parentIngredintsList.size() >= 2 && nodeIndex == 0) || (parentIngredintsList.size() >= 4 && nodeIndex == 2)) {
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 2, yShift + 2), null, "8"));
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 2, yShift + 3), null, "4"));
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 3, yShift + 3), null, "4"));
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 3, yShift + 2), null, "4"));
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 4, yShift + 2), null, "4"));
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 4, yShift + 3), null, "0"));
-            breakPoints.add(new Size(currentXLevel - 4, yShift + 3));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 2, yShift + 2), null, "8"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 2, yShift + 3), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 3, yShift + 3), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 3, yShift + 2), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 4, yShift + 2), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 4, yShift + 3), null, "0"));
+            breakPoints.add(new Point2D(currentXLevel - 4, yShift + 3));
         }
 
         // Соединение линий конвейеров на неизвестном расстоянии по breakPoints
         int i = 0;
         while (true) {
-            Size currentSize = new Size(startXLevel - 1, yShift + 3).xShift(i);
-            if (breakPoints.contains(currentSize)) {
+            Point2D currentPoint = new Point2D(startXLevel - 1, yShift + 3).xShift(i);
+            if (breakPoints.contains(currentPoint)) {
                 break;
             }
-            entities.add(new Entity("transport-belt", currentSize, null, "4"));
+            entities.add(new Entity("transport-belt", currentPoint, null, "4"));
             i++;
         }
     }
@@ -116,23 +113,23 @@ public class SchemeBuilder {
     private void addTopTransportBelts(List<Entity> entities, int currentXLevel, int yShift, boolean isTwoLine, int i) {
         if (i == 0) {
             if (isTwoLine) {
-                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift - 4), null, "8"));
+                entities.add(new Entity("transport-belt", new Point2D(currentXLevel + 1, yShift - 4), null, "8"));
             }
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift - 3), null, "8"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 0, yShift - 3), null, "8"));
         } else {
             if (isTwoLine) {
-                entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift - 4), null, "4"));
+                entities.add(new Entity("transport-belt", new Point2D(currentXLevel + 1, yShift - 4), null, "4"));
             }
 
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift - 3), null, "4"));
-            entities.add(new Entity("transport-belt", new Size(currentXLevel + 1, yShift - 3), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 0, yShift - 3), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel + 1, yShift - 3), null, "4"));
         }
         // Конвейеры
         if (isTwoLine) {
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, yShift - 4), null, "4"));
-            entities.add(new Entity("transport-belt", new Size(currentXLevel - 0, yShift - 4), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 1, yShift - 4), null, "4"));
+            entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 0, yShift - 4), null, "4"));
         }
-        entities.add(new Entity("transport-belt", new Size(currentXLevel - 1, yShift - 3), null, "4"));
+        entities.add(new Entity("transport-belt", new Point2D(currentXLevel - 1, yShift - 3), null, "4"));
     }
 
     private int getYShift(PrimaryRecipeNode topNode) {
